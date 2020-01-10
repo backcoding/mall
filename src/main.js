@@ -5,6 +5,9 @@ import store from './store'
 
 Vue.config.productionTip = false
 
+// 为接受refresh创建$bus事件总线 给bus一个vue实例
+Vue.prototype.$bus = new Vue()
+
 new Vue({
   router,
   store,
