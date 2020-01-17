@@ -21,11 +21,11 @@
       <home-swiper :banners="barners" @swiperImageLoad="swiperImageLoad" />
       <recommend-view :recommends="recommends" />
       <feature-view />
-      <!-- <tab-control :titles="['流行', '新款', '精选']" @tabClick="tabClick" ref="tabControl2"/> -->
       <tab-control :titles="['流行', '新款', '精选']" @tabClick="tabClick" ref="tabControl2" />
       <goods-list :goods="showGoods" />
     </scroll>
-    <back-top @click.native="backClick" v-show="isShowBackTop" />
+    <!-- .native修饰符可以监听组件的原生事件，组件原本无法监听 -->
+    <back-top @click.native="backClick" v-show="isBackTopShow" />
   </div>
 </template>
 
@@ -40,8 +40,10 @@ import GoodsList from "components/content/goods/GoodsList"; //商品列表GoodsL
 import Scroll from "components/common/scroll/Scroll"; //Scroll滚动插件
 import BackTop from "components/content/backTop/BackTop"; //BackTop 回滚Top
 
-import { getHomeMultidata, getHomeGoods } from "network/home"; //加载aixo数据请求
+import { backTopMixin } from "common/mixin";
 import { debounce } from "common/utils";
+
+import { getHomeMultidata, getHomeGoods } from "network/home"; //加载aixo数据请求
 
 export default {
   name: "home",
@@ -55,6 +57,7 @@ export default {
     GoodsList,
     BackTop
   },
+
   data() {
     return {
       barners: [],
@@ -65,43 +68,48 @@ export default {
         sell: { page: 0, list: [] }
       },
       currentType: "pop",
-      isShowBackTop: false,
       tabOffsetTop: 0,
       isTabFixed: false,
       saveY: 0
     };
   },
+  mixins: [backTopMixin],
   computed: {
     showGoods() {
       return this.goods[this.currentType].list;
     }
   },
-
   activated() {
-    // 这里有bug scrollBehavior 可解决？ 
-    this.$refs.scroll.scrollTo(0, this.saveY, 0);
-    this.$refs.scroll.refresh()
+    // 监听图片加载
+    const refresh = debounce(this.$refs.scroll.refresh, 50); // 每隔50ms再去调用refresh,如果上一次还未完成则清除上一次的50，再过50ms执行
+    this.itemImageListener = () => {
+      refresh();
+    };
+    this.$bus.$on("itemImageLoad", this.itemImageListener);
+
+    this.$refs.scroll.scrollTo(0, this.saveY);
+    this.$refs.scroll.refresh();
   },
-  deactivated() {
-    this.saveY = this.$refs.scroll.getScrollY();
-  },
+
   //记录离开时的的状态和位置
+  deactivated() {
+    //保存 Y值。
+    this.saveY = this.$refs.scroll.getScrollY();
+    // 2.取消全局事件的监听
+    this.$bus.$off("itemImageLoad", this.itemImageListener);
+  },
 
   created() {
     //1.请求banner数据
     this.getHomeMultidata();
+
     //2.请求商品数据 *动态获取
     this.getHomeGoods("pop");
     this.getHomeGoods("new");
     this.getHomeGoods("sell");
   },
-  mounted() {
-    //监听goodsitemlist图片加载完成--频繁刷新防抖处理
-    const refresh = debounce(this.$refs.scroll.refresh, 50);
-    this.$bus.$on("itemIamgload", () => {
-      refresh();
-    });
-  },
+
+  mounted() {},
 
   methods: {
     /**
@@ -123,14 +131,9 @@ export default {
       this.$refs.tabControl2.currentIndex = index;
     },
 
-    backClick() {
-      this.$refs.scroll.scrollTo(0, 0);
-    },
-
     contentScroll(position) {
-      //console.log(position);
       //Back是否显示
-      this.isShowBackTop = -position.y > 1000;
+      this.isBackTopShow = position.y < -1000;
 
       // 决定tabControl是否吸顶(position: fixed)
       this.isTabFixed = -position.y > this.tabOffsetTop;

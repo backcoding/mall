@@ -40,7 +40,7 @@ export default {
     itemclick() {
       //console.log('itemcilck')
       this.$router.replace(this.path);
-      //console.log($$router)
+      //console.log($router)
     }
   }
 };
@@ -64,7 +64,5 @@ export default {
   margin-top: 3px;
   color: #333;
 }
-.active {
-  color: red;
-}
+
 </style>
