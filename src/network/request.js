@@ -3,7 +3,7 @@ import axios from 'axios'
 export function request(config) {
   // 1.创建axios的实例
   const instance = axios.create({
-    baseURL: 'http://106.54.54.227:9000/api/zz1',
+    baseURL: 'http://106.54.54.237:8000/api/wh',
     //私人接口，此接口地址错误！！！
     timeout: 5000
   })

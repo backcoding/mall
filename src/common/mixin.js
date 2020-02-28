@@ -15,7 +15,7 @@ export const itemListenerMixin = {
       this.refresh();
     };
     this.$bus.$on("itemIamgload", this.itemImageListener);
-    console.log('mixin混入中的内容');
+   // console.log('mixin混入中的内容');
     
   }
 }
@@ -31,8 +31,8 @@ export const backTopMixin = {
   },
   methods: {
     backClick() {
-      this.$refs.scroll.scrollTo(0, 0, 500);
-      console.log('mixin混入中的内容');
+      this.$refs.scroll.scrollTo(0, 0, 1000);
+      //console.log('mixin混入中的内容');
     }
     
   }

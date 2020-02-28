@@ -10,7 +10,7 @@
       <detail-comment-info :comment-info="commentInfo" ref="comments" />
       <goods-list :goods="recommends" ref="recommends" />
     </scroll>
-      <detail-bottom-bar/>
+      <detail-bottom-bar @addCart="addToCart" @buy="buy" />
        <back-top @click.native="backClick" v-show="isBackTopShow" />
   </div>
 </template>
@@ -38,6 +38,8 @@ import {
   GoodsParam,
   getRecommend
 } from "network/detail";
+
+import { mapActions } from "vuex"
 
 export default {
   name: "Detail",
@@ -75,7 +77,6 @@ export default {
 
     getDetail(this.iid).then(res => {
       //2.获取滚动图片数据
-      //console.log(res);
       const data = res.result;
       this.topImages = data.itemInfo.topImages;
 
@@ -127,6 +128,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(['addCart']),
     imageLoad() {
       this.refresh();
       this.getThemeTopY();
@@ -164,6 +166,26 @@ export default {
           this.$refs.nav.currentIndex = lastIndex;
         }
       }
+    },
+
+    
+    addToCart() { 
+      //1.获取购物车信息
+      const product = {}
+      product.iid = this.iid
+      product.imges = this.topImages[0]
+      product.desc = this.goods.desc
+      product.title = this.goods.title
+      product.price = this.goods.lowNowPrice
+
+      //2.将商品添加到购物车
+      this.addCart(product).then(res =>{
+        this.$toast.show(res,2000)
+      })
+
+    },
+    buy() {
+      this.$toast.show('小店未开业,暂不能购买！', 2000)
     }
   }
 };

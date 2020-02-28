@@ -109,7 +109,9 @@ export default {
     this.getHomeGoods("sell");
   },
 
-  mounted() {},
+  mounted() {
+    
+  },
 
   methods: {
     /**
